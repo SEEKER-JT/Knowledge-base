@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知識のストック</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .toast-enter { transform: translateY(100%); opacity: 0; }
+        .toast-enter-active { transform: translateY(0); opacity: 1; transition: all 300ms ease-out; }
+        .toast-leave { transform: translateY(0); opacity: 1; }
+        .toast-leave-active { transform: translateY(100%); opacity: 0; transition: all 300ms ease-in; }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col">
+
+    <!-- ヘッダー -->
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <h1 class="text-xl font-bold text-slate-700 flex items-center gap-2 whitespace-nowrap">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+                知識のストック
+            </h1>
+
+            <!-- PC用検索バー -->
+            <div class="relative flex-grow max-w-sm mx-4 hidden md:block">
+                <input type="text" id="searchInput" oninput="executeSearch(this.value)" placeholder="過去の記録を検索..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 focus:bg-white transition-colors text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+
+            <!-- アクションボタン -->
+            <div class="flex flex-wrap gap-2 justify-center sm:justify-end">
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <button onclick="copyCurrentMonth()" class="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-3 py-1.5 rounded-lg shadow-sm transition-colors flex items-center justify-center gap-1 text-xs font-medium whitespace-nowrap">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                        月をコピー
+                    </button>
+                    <button onclick="downloadMonth()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg shadow-sm transition-colors flex items-center justify-center gap-1 text-xs font-medium whitespace-nowrap">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        月をDL
+                    </button>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <button onclick="copyCurrentYear()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3 py-1.5 rounded-lg shadow-sm transition-colors flex items-center justify-center gap-1 text-xs font-medium whitespace-nowrap">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                        年をコピー
+                    </button>
+                    <button onclick="downloadYear()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg shadow-sm transition-colors flex items-center justify-center gap-1 text-xs font-medium whitespace-nowrap">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                        年をDL
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- モバイル用検索バー -->
+        <div class="px-4 pb-4 md:hidden bg-white border-b border-slate-100">
+            <div class="relative w-full">
+                <input type="text" id="searchInputMobile" oninput="executeSearch(this.value)" placeholder="過去の記録を検索..." class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 focus:bg-white transition-colors text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+        </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="flex-grow max-w-4xl w-full mx-auto px-4 py-8">
+        
+        <!-- 月切り替えコントロール -->
+        <div id="monthControl" class="flex justify-between items-center mb-8 bg-white p-4 rounded-xl shadow-sm border border-slate-100">
+            <button onclick="changeMonth(-1)" class="p-2 rounded-full hover:bg-slate-100 text-slate-600 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+            </button>
+            <h2 id="currentMonthDisplay" class="text-2xl font-bold text-slate-700"></h2>
+            <button onclick="changeMonth(1)" class="p-2 rounded-full hover:bg-slate-100 text-slate-600 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+            </button>
+        </div>
+
+        <!-- 日記リスト（動的生成） -->
+        <div id="diaryContainer" class="space-y-6">
+            <!-- JavaScriptでここに各日の入力欄が挿入されます -->
+        </div>
+
+        <!-- 検索結果リスト -->
+        <div id="searchResultsContainer" class="space-y-4 hidden">
+            <div class="mb-6 text-slate-600 font-medium flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                <span id="searchResultCount"></span>
+            </div>
+            <div id="searchResultsList" class="space-y-4"></div>
+        </div>
+
+    </main>
+
+    <!-- トースト通知用のコンテナ -->
+    <div id="toastContainer" class="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <script>
+        const daysOfWeek = ['日', '月', '火', '水', '木', '金', '土'];
+        const categories = [
+            { id: 'body', label: '身体', color: 'text-rose-500', bg: 'bg-rose-50', border: 'focus:border-rose-300' },
+            { id: 'work', label: '業務', color: 'text-blue-500', bg: 'bg-blue-50', border: 'focus:border-blue-300' },
+            { id: 'discovery', label: '発見', color: 'text-amber-500', bg: 'bg-amber-50', border: 'focus:border-amber-300' }
+        ];
+        
+        let currentDate = new Date();
+        const diaryContainer = document.getElementById('diaryContainer');
+        const monthDisplay = document.getElementById('currentMonthDisplay');
+
+        // アプリ初期化
+        function init() {
+            renderMonth(currentDate.getFullYear(), currentDate.getMonth());
+        }
+
+        // 月を変更する
+        function changeMonth(delta) {
+            currentDate.setMonth(currentDate.getMonth() + delta);
+            renderMonth(currentDate.getFullYear(), currentDate.getMonth());
+        }
+
+        // カレンダー（入力欄）の描画
+        function renderMonth(year, month) {
+            diaryContainer.innerHTML = '';
+            monthDisplay.textContent = `${year}年 ${month + 1}月`;
+
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const today = new Date();
+            const isCurrentMonth = (year === today.getFullYear() && month === today.getMonth());
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                const date = new Date(year, month, i);
+                const dayOfWeek = daysOfWeek[date.getDay()];
+                const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                
+                const isToday = isCurrentMonth && (i === today.getDate());
+                const dayColor = date.getDay() === 0 ? 'text-red-500' : date.getDay() === 6 ? 'text-blue-500' : 'text-slate-700';
+                
+                const dayCard = document.createElement('div');
+                dayCard.className = `p-5 rounded-xl border bg-white shadow-sm transition-all hover:shadow-md ${isToday ? 'border-blue-300 ring-2 ring-blue-50' : 'border-slate-200'}`;
+                
+                let categoriesHTML = '';
+                categories.forEach(cat => {
+                    const storageKey = `diary_${dateString}_${cat.id}`;
+                    const savedText = localStorage.getItem(storageKey) || '';
+                    
+                    categoriesHTML += `
+                        <div class="flex flex-col gap-1">
+                            <label class="text-xs font-bold ${cat.color} flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full ${cat.bg} border border-current"></span>
+                                ${cat.label}
+                            </label>
+                            <textarea 
+                                oninput="saveData('${dateString}', '${cat.id}', this.value)"
+                                placeholder="${cat.label}に関する記録..."
+                                class="w-full p-3 text-sm bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 ${cat.border} resize-y min-h-[80px]"
+                            >${escapeHTML(savedText)}</textarea>
+                        </div>
+                    `;
+                });
+
+                dayCard.innerHTML = `
+                    <div class="flex items-center justify-between mb-4 border-b border-slate-100 pb-2">
+                        <div class="font-bold text-lg ${dayColor} flex items-center gap-2">
+                            <span>${month + 1}月${i}日</span>
+                            <span class="text-sm font-normal bg-slate-100 px-2 py-0.5 rounded-md text-slate-600">${dayOfWeek}</span>
+                            ${isToday ? '<span class="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full ml-2">今日</span>' : ''}
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        ${categoriesHTML}
+                    </div>
+                `;
+                diaryContainer.appendChild(dayCard);
+            }
+        }
+
+        // 入力データの保存
+        function saveData(dateString, category, value) {
+            const key = `diary_${dateString}_${category}`;
+            if (value.trim() === '') {
+                localStorage.removeItem(key);
+            } else {
+                localStorage.setItem(key, value);
+            }
+        }
+
+        // 指定した日のデータをフォーマットしてテキスト化
+        function formatDayData(dateString, displayDate) {
+            const body = localStorage.getItem(`diary_${dateString}_body`);
+            const work = localStorage.getItem(`diary_${dateString}_work`);
+            const discovery = localStorage.getItem(`diary_${dateString}_discovery`);
+
+            if (!body && !work && !discovery) return null; // 記録がない日はスキップ
+
+            let text = `${displayDate}\n`;
+            if (body) text += `【身体】\n${body}\n`;
+            if (work) text += `【業務】\n${work}\n`;
+            if (discovery) text += `【発見】\n${discovery}\n`;
+            return text + '\n';
+        }
+
+        // クリップボードへコピー（月）
+        function copyCurrentMonth() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            let allText = `=== ${year}年${month + 1}月 ===\n\n`;
+            let hasContent = false;
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                const dateObj = new Date(year, month, i);
+                const displayDate = `■ ${month + 1}月${i}日 (${daysOfWeek[dateObj.getDay()]})`;
+                
+                const dayText = formatDayData(dateKey, displayDate);
+                if (dayText) {
+                    allText += dayText;
+                    hasContent = true;
+                }
+            }
+
+            if (!hasContent) {
+                showToast('今月の記録がありません', 'error');
+                return;
+            }
+
+            executeCopy(allText, `${month + 1}月の記録をコピーしました`);
+        }
+
+        // クリップボードへコピー（年）
+        function copyCurrentYear() {
+            const year = currentDate.getFullYear();
+            let allText = `=== ${year}年 年間記録 ===\n\n`;
+            let hasContent = false;
+
+            for (let month = 0; month < 12; month++) {
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                let monthText = '';
+                
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                    const dateObj = new Date(year, month, i);
+                    const displayDate = `■ ${month + 1}月${i}日 (${daysOfWeek[dateObj.getDay()]})`;
+                    
+                    monthText += formatDayData(dateKey, displayDate) || '';
+                }
+                
+                if (monthText) {
+                    allText += `--- ${month + 1}月 ---\n${monthText}`;
+                    hasContent = true;
+                }
+            }
+
+            if (!hasContent) {
+                showToast('今年の記録がありません', 'error');
+                return;
+            }
+
+            executeCopy(allText, `${year}年の記録をコピーしました`);
+        }
+
+        // コピー実行ヘルパー
+        function executeCopy(text, successMessage) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast(successMessage);
+            } catch (err) {
+                showToast('コピーに失敗しました', 'error');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // テキストファイルのダウンロード
+        function downloadTextFile(text, filename) {
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast(`${filename} をダウンロードしました`);
+        }
+
+        // ダウンロード（月）
+        function downloadMonth() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            let allText = `=== ${year}年${month + 1}月 ===\n\n`;
+            let hasContent = false;
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                const dateObj = new Date(year, month, i);
+                const displayDate = `■ ${month + 1}月${i}日 (${daysOfWeek[dateObj.getDay()]})`;
+                
+                const dayText = formatDayData(dateKey, displayDate);
+                if (dayText) {
+                    allText += dayText;
+                    hasContent = true;
+                }
+            }
+
+            if (!hasContent) {
+                showToast('今月の記録がありません', 'error');
+                return;
+            }
+            downloadTextFile(allText, `知識のストック_${year}年${String(month + 1).padStart(2, '0')}月.txt`);
+        }
+
+        // ダウンロード（年）
+        function downloadYear() {
+            const year = currentDate.getFullYear();
+            let allText = `=== ${year}年 年間記録 ===\n\n`;
+            let hasContent = false;
+
+            for (let month = 0; month < 12; month++) {
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                let monthText = '';
+                
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                    const dateObj = new Date(year, month, i);
+                    const displayDate = `■ ${month + 1}月${i}日 (${daysOfWeek[dateObj.getDay()]})`;
+                    
+                    monthText += formatDayData(dateKey, displayDate) || '';
+                }
+                
+                if (monthText) {
+                    allText += `--- ${month + 1}月 ---\n${monthText}`;
+                    hasContent = true;
+                }
+            }
+
+            if (!hasContent) {
+                showToast('今年の記録がありません', 'error');
+                return;
+            }
+            downloadTextFile(allText, `知識のストック_${year}年.txt`);
+        }
+
+        // 検索機能
+        function executeSearch(keyword) {
+            const searchInput = document.getElementById('searchInput');
+            const searchInputMobile = document.getElementById('searchInputMobile');
+            
+            // PCとモバイルの検索窓を同期
+            if (searchInput.value !== keyword) searchInput.value = keyword;
+            if (searchInputMobile && searchInputMobile.value !== keyword) searchInputMobile.value = keyword;
+
+            const monthControl = document.getElementById('monthControl');
+            const searchResultsContainer = document.getElementById('searchResultsContainer');
+            const searchResultsList = document.getElementById('searchResultsList');
+            
+            // キーワードが空の場合はカレンダーに戻す
+            if (!keyword.trim()) {
+                diaryContainer.classList.remove('hidden');
+                monthControl.classList.remove('hidden');
+                searchResultsContainer.classList.add('hidden');
+                return;
+            }
+
+            // 検索画面を表示
+            diaryContainer.classList.add('hidden');
+            monthControl.classList.add('hidden');
+            searchResultsContainer.classList.remove('hidden');
+            
+            searchResultsList.innerHTML = '';
+            const kw = keyword.toLowerCase();
+            let matchCount = 0;
+
+            // ローカルストレージから全データを収集
+            const allEntries = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key.startsWith('diary_')) {
+                    const parts = key.split('_'); // [diary, YYYY-MM-DD, category]
+                    if (parts.length === 3) {
+                        const dateKey = parts[1];
+                        const category = parts[2];
+                        const text = localStorage.getItem(key);
+                        
+                        if (!allEntries[dateKey]) allEntries[dateKey] = { body: '', work: '', discovery: '' };
+                        allEntries[dateKey][category] = text || '';
+                    }
+                }
+            }
+
+            // 新しい日付順にソート
+            const sortedDates = Object.keys(allEntries).sort((a, b) => b.localeCompare(a));
+
+            sortedDates.forEach(dateKey => {
+                const entry = allEntries[dateKey];
+                const combinedText = `${entry.body} ${entry.work} ${entry.discovery}`.toLowerCase();
+                
+                if (combinedText.includes(kw)) {
+                    matchCount++;
+                    
+                    const dateObj = new Date(dateKey);
+                    const dayOfWeek = daysOfWeek[dateObj.getDay()];
+                    const displayDate = `${dateObj.getFullYear()}年${dateObj.getMonth() + 1}月${dateObj.getDate()}日 (${dayOfWeek})`;
+                    
+                    const resultDiv = document.createElement('div');
+                    resultDiv.className = 'p-5 rounded-xl border border-blue-200 bg-white shadow-sm hover:shadow-md transition-shadow';
+                    
+                    const formatSection = (catId, title, text, colorClass, bgClass) => {
+                        if (!text) return '';
+                        const isMatch = text.toLowerCase().includes(kw);
+                        const opacity = isMatch ? 'opacity-100' : 'opacity-50 grayscale';
+                        return `
+                            <div class="${opacity} mt-2">
+                                <span class="font-bold text-xs ${colorClass} ${bgClass} px-2 py-1 rounded border border-current bg-opacity-20">【${title}】</span>
+                                <p class="mt-1 text-sm text-slate-700 whitespace-pre-wrap">${escapeHTML(text)}</p>
+                            </div>
+                        `;
+                    };
+
+                    resultDiv.innerHTML = `
+                        <div class="font-bold text-slate-800 border-b border-slate-100 pb-2 mb-2 flex items-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                            ${displayDate}
+                        </div>
+                        <div class="space-y-3">
+                            ${formatSection('body', '身体', entry.body, 'text-rose-500', 'bg-rose-50')}
+                            ${formatSection('work', '業務', entry.work, 'text-blue-500', 'bg-blue-50')}
+                            ${formatSection('discovery', '発見', entry.discovery, 'text-amber-500', 'bg-amber-50')}
+                        </div>
+                    `;
+                    searchResultsList.appendChild(resultDiv);
+                }
+            });
+
+            document.getElementById('searchResultCount').textContent = matchCount > 0 ? `「${escapeHTML(keyword)}」で ${matchCount}件 の記録が見つかりました` : '一致する記録はありません';
+        }
+
+        // XSS対策
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag])
+            );
+        }
+
+        // トースト通知を表示
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            const bgColor = type === 'success' ? 'bg-slate-800' : 'bg-red-500';
+            
+            toast.className = `${bgColor} text-white px-6 py-3 rounded-full shadow-lg text-sm font-medium flex items-center gap-2 toast-enter`;
+            
+            const icon = type === 'success' 
+                ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
+                : `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+                
+            toast.innerHTML = `${icon} ${escapeHTML(message)}`;
+            
+            container.appendChild(toast);
+            
+            // アニメーション用にクラスを切り替え
+            requestAnimationFrame(() => {
+                toast.classList.remove('toast-enter');
+                toast.classList.add('toast-enter-active');
+            });
+
+            // 3秒後に消える
+            setTimeout(() => {
+                toast.classList.remove('toast-enter-active');
+                toast.classList.add('toast-leave-active');
+                toast.addEventListener('transitionend', () => {
+                    toast.remove();
+                });
+            }, 3000);
+        }
+
+        // 起動時に初期化
+        window.onload = init;
+    </script>
+</body>
+</html>
